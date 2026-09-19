@@ -1,0 +1,51 @@
+name: Patrol Planner Windows package
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  package:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build portable executable
+        run: .\release\patrol-planner-build\build.ps1
+      - name: Run regression tests
+        run: |
+          node --test frontend/patrol-planner/test_geometry.mjs
+          Push-Location frontend/patrol-planner
+          python -m unittest -v test_server.py
+          Pop-Location
+          .\scripts\verify_release_secrets.ps1
+      - name: Install Inno Setup
+        run: choco install innosetup --version=6.7.3 --yes --no-progress
+      - name: Verify installer script
+        run: .\scripts\verify_installer_script.ps1
+      - name: Build installer and checksums
+        run: .\release\installer\build-installer.ps1
+      - name: Build public source bundle
+        run: python .\scripts\build_source_bundle.py
+      - name: Verify public source bundle
+        run: .\scripts\verify_public_bundle.ps1
+      - name: Verify frozen executable
+        run: .\scripts\verify_portable.ps1
+      - name: Verify frozen DXF import
+        run: python .\scripts\verify_frozen_dxf.py
+      - name: Upload Windows packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: patrol-planner-windows
+          path: |
+            release/*.zip
+            release/*.txt
+            release/*.json
+            release/*-setup.exe

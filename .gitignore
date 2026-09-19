@@ -1,0 +1,32 @@
+# Local secrets
+config/local/*.ps1
+config/local/*.env
+
+# Local runtime/build artifacts
+logs/
+work/
+build/
+dist/
+*.log
+*.err.log
+*.out.log
+.tmp-*
+
+# Customer GIS/CAD and generated source data
+data/gis/source/
+data/gis/processed/
+data/gis/**/real/
+*.dxf
+*.dwg
+*.gpkg
+
+# Local ML/runtime assets
+*.pt
+*.onnx
+
+# Other project/customer datasets in the monorepo
+ai-hazard-learning/data/
+vendor/pig-ui/public/data/
+tmp-*
+**/__pycache__/
+ai-hazard-learning/experiments/
